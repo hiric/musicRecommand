@@ -1,0 +1,36 @@
+#coding: utf-8
+import json
+import sys
+
+
+def parse_song_line(in_line):
+    data = json.loads(in_line)
+    name = data['result']['name']
+    tags = ",".join(data['result']['tags'])
+    subscribed_count = data['result']['subscribedCount']
+    if (subscribed_count < 100):
+        return False
+    playlist_id = data['result']['id']
+    song_info = ''
+    songs = data['result']['tracks']
+    for song in songs:
+        try:
+            song_info += "\t" + ":::".join([str(song['id']),song['name'],song['atrists'][0]['name'],str(song['popularity'])])
+        except Exception as e:
+            continue
+    #生产一个 歌单信息（名称，tag，歌单ID，收藏数）+歌曲信息（ID，name,atrists,popularity）
+    return name + "##" + tags + "##" + str(playlist_id) + "##" + str(subscribed_count) + song_info
+
+
+def parse_file (in_file, out_file):
+    results = ''
+    out = open(out_file, 'w',encoding = 'utf-8')
+    for line in open(in_file,encoding = 'utf-8'):
+        try:
+            results += parse_song_line(line)
+        except Exception as e:
+            continue
+        if(results):
+            out.write(str(results.encode('utf-8').strip() + b"\n"))
+    out.close()
+    
